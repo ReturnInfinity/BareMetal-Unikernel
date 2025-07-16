@@ -1,6 +1,6 @@
 # BareMetal Unikernel
 
-Initialization code to use BareMetal as a Unikernel. It loads the first program listed in BMFS and executes it.
+This repository contains the necessary setup, code, and script to use [BareMetal](https://github.com/ReturnInfinity/BareMetal) as a [Unikernel](https://en.wikipedia.org/wiki/Unikernel). The first program listed in BMFS will be loaded and executed.
 
 
 ### Table of Contents
