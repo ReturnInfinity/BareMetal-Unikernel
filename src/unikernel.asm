@@ -20,7 +20,6 @@ start:
 
 	; Detect file system for BMFS
 	mov rax, 0			; First sector
-	add rax, 32768
 	mov rcx, 1			; One 4K sector
 	mov rdx, 0			; Drive 0
 	mov rdi, temp_data
@@ -28,28 +27,24 @@ start:
 	call [b_nvs_read]
 	mov eax, [rsi+1024]
 	cmp eax, 0x53464d42		; "BMFS"
-	je bmfs
-	mov rsi, message_noFS
-	call output
-	jmp $
+	jne noFS
 
-bmfs:
 	; Load the directory of BMFS
 	mov rdi, temp_data
 	mov rsi, rdi
 	mov rax, 1
-	add rax, [UEFI_Disk_Offset]	; For hybrid disk image
 	mov rcx, 1
 	mov rdx, 0
 	call [b_nvs_read]		; Load the 4K BMFS file table
 
 	; Gather file details
 	mov rax, [rsi+0x20]		; BMFS File Starting Block
+	cmp rax, 0
+	je noFile
 	shl rax, 9			; Shift left by 9 to convert 2M block to 4K sector
 	mov rcx, [rsi+0x30]		; BMFS File Size in bytes
 
 	; Load program to memory
-	add rax, [UEFI_Disk_Offset]	; For hybrid disk image
 	mov rdi, [ProgramLocation]	; Address to load program to
 	add rcx, 4095			; Add 1-byte less of a full sector amount
 	shr rcx, 12			; Quick divide by 4096
@@ -58,6 +53,16 @@ bmfs:
 
 	call [ProgramLocation]		; Execute program
 
+	jmp $				; Spin forever as program completed
+
+noFS:
+	mov rsi, message_noFS
+	call output
+	jmp $
+
+noFile:
+	mov rsi, message_noFile
+	call output
 	jmp $				; Spin forever as program completed
 
 
@@ -123,6 +128,7 @@ output_char:
 ; Strings
 
 message_noFS:		db 'No filesystem detected! Halting.', 0
+message_noFile:		db 'No file detected! Halting.', 0
 
 ; Variables
 align 16
