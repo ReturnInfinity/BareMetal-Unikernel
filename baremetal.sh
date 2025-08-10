@@ -121,8 +121,8 @@ function baremetal_setup {
 
 	rm sys/bios-floppy*
 	rm sys/bios-pxe*
-	rm sys/pure64-uefi*
-	rm sys/uefi*
+#	rm sys/pure64-uefi*
+#	rm sys/uefi*
 	rm sys/bmfslite
 
 	echo -n "Copying software to disk image... "
@@ -164,6 +164,7 @@ function baremetal_build {
 	
 	cd src
 	nasm unikernel.asm -o ../sys/unikernel.sys -l ../sys/unikernel-debug.txt
+	nasm unikernel-uefi.asm -o ../sys/unikernel-uefi.sys -l ../sys/unikernel-uefi-debug.txt
 	cd ..
 	build_dir "src/Pure64"
 	build_dir "src/BareMetal"
@@ -176,6 +177,7 @@ function baremetal_build {
 
 	# Inject a program binary into to the kernel (ORG 0x001E0000)
 	cat pure64-bios.sys kernel.sys unikernel.sys > software.sys
+	cat pure64-uefi.sys kernel.sys unikernel-uefi.sys > software-uefi.sys
 
 	# Copy software to BMFS for BIOS loading
 	dd if=software.sys of=bmfs.img bs=4096 seek=2 conv=notrunc > /dev/null 2>&1
@@ -251,6 +253,7 @@ function baremetal_app {
 	if [ -f $1 ]; then
 		./bmfs bmfs.img format /force
 		./bmfs bmfs.img write $1
+		cat software-uefi.sys $1 > BOOTX64.EFI
 		cd ..
 	else
 		echo "$1 does not exist."
