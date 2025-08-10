@@ -116,9 +116,9 @@ function baremetal_setup {
 
 	# Tweak start sector since the unikernel doesn't use a hybrid disk image
 	if [[ "$(uname)" == "Darwin" ]]; then
-		    sed -i '' 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+    		sed -i '' 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
 	else
-		    sed -i 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+    		sed -i 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
 	fi
 
 	baremetal_build
