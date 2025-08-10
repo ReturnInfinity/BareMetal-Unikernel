@@ -9,7 +9,7 @@
 
 BITS 64
 ORG 0x001E0000
-SIZE equ 512			; Pad unikernel init code to this length
+SIZE equ 256			; Pad unikernel init code to this length
 
 %include 'api/libBareMetal.asm'
 

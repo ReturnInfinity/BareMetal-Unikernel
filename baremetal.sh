@@ -121,15 +121,13 @@ function baremetal_setup {
 
 	rm sys/bios-floppy*
 	rm sys/bios-pxe*
-#	rm sys/pure64-uefi*
-#	rm sys/uefi*
 	rm sys/bmfslite
 
 	echo -n "Copying software to disk image... "
 	baremetal_install
 	echo "OK"
 
-	echo -e "\nSetup Complete. Add an app to the image with ./baremetal.sh YOURAPP.app' and then './baremetal.sh run' to start the unikernel."
+	echo -e "\nSetup Complete.\nAdd an app to the image with ./baremetal.sh YOURAPP.app' and then './baremetal.sh run' to start the unikernel."
 }
 
 # Initialize disk images
@@ -253,7 +251,9 @@ function baremetal_app {
 	if [ -f $1 ]; then
 		./bmfs bmfs.img format /force
 		./bmfs bmfs.img write $1
-		cat software-uefi.sys $1 > BOOTX64.EFI
+		cat software-uefi.sys $1 > UEFI_PAYLOAD.sys
+		cp uefi.sys BOOTX64.EFI
+		dd if=UEFI_PAYLOAD.sys of=BOOTX64.EFI bs=4096 seek=1 conv=notrunc > /dev/null 2>&1
 		cd ..
 	else
 		echo "$1 does not exist."
