@@ -125,15 +125,13 @@ function baremetal_setup {
 
 	rm sys/bios-floppy*
 	rm sys/bios-pxe*
-	rm sys/pure64-uefi*
-	rm sys/uefi*
 	rm sys/bmfslite
 
 	echo -n "Copying software to disk image... "
 	baremetal_install
 	echo "OK"
 
-	echo -e "\nSetup Complete. Add an app to the image with ./baremetal.sh YOURAPP.app' and then './baremetal.sh run' to start the unikernel."
+	echo -e "\nSetup Complete.\nAdd an app to the image with ./baremetal.sh YOURAPP.app' and then './baremetal.sh run' to start the unikernel."
 }
 
 # Initialize disk images
@@ -168,6 +166,7 @@ function baremetal_build {
 	
 	cd src
 	nasm unikernel.asm -o ../sys/unikernel.sys -l ../sys/unikernel-debug.txt
+	nasm unikernel-uefi.asm -o ../sys/unikernel-uefi.sys -l ../sys/unikernel-uefi-debug.txt
 	cd ..
 	build_dir "src/Pure64"
 	build_dir "src/BareMetal"
@@ -180,6 +179,7 @@ function baremetal_build {
 
 	# Inject a program binary into to the kernel (ORG 0x001E0000)
 	cat pure64-bios.sys kernel.sys unikernel.sys > software.sys
+	cat pure64-uefi.sys kernel.sys unikernel-uefi.sys > software-uefi.sys
 
 	# Copy software to BMFS for BIOS loading
 	dd if=software.sys of=bmfs.img bs=4096 seek=2 conv=notrunc > /dev/null 2>&1
@@ -253,8 +253,13 @@ function baremetal_app {
 	baremetal_sys_check
 	cd sys
 	if [ -f $1 ]; then
+		# Prep BIOS
 		./bmfs bmfs.img format /force
 		./bmfs bmfs.img write $1
+		# Prep UEFI
+		cp uefi.sys BOOTX64.EFI
+		dd if=software-uefi.sys of=BOOTX64.EFI bs=4096 seek=1 conv=notrunc > /dev/null 2>&1
+		dd if=$1 of=BOOTX64.EFI bs=1024 seek=64 conv=notrunc > /dev/null 2>&1
 		cd ..
 	else
 		echo "$1 does not exist."
