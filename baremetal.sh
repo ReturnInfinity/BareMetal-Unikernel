@@ -249,11 +249,13 @@ function baremetal_app {
 	baremetal_sys_check
 	cd sys
 	if [ -f $1 ]; then
+		# Prep BIOS
 		./bmfs bmfs.img format /force
 		./bmfs bmfs.img write $1
-		cat software-uefi.sys $1 > UEFI_PAYLOAD.sys
+		# Prep UEFI
 		cp uefi.sys BOOTX64.EFI
-		dd if=UEFI_PAYLOAD.sys of=BOOTX64.EFI bs=4096 seek=1 conv=notrunc > /dev/null 2>&1
+		dd if=software-uefi.sys of=BOOTX64.EFI bs=4096 seek=1 conv=notrunc > /dev/null 2>&1
+		dd if=$1 of=BOOTX64.EFI bs=1024 seek=64 conv=notrunc > /dev/null 2>&1
 		cd ..
 	else
 		echo "$1 does not exist."

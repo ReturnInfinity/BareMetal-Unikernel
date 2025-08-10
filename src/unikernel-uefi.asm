@@ -19,12 +19,12 @@ start:
 	call output_char
 
 	; Copy application to correct memory address
-	mov rsi, 0x001E0000+SIZE
+	mov rsi, 0x410000
 	mov rax, [rsi]
 	cmp rax, 0
 	je noData
-	mov rdi, ProgramLocation
-	mov rcx, 262144
+	mov rdi, [ProgramLocation]
+	mov rcx, 131072
 	rep movsq
 
 	call [ProgramLocation]		; Execute program
