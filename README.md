@@ -51,12 +51,36 @@ BareMetal Unikernel consists of several different projects:
 
 	./baremetal.sh YOURAPP.app
 
-This command installs your app to the disk image. The app file should be in `sys`
+This command installs your app to the disk image. The app file should be in `sys`.
 
 
 ## Running the unikernel
 
 	./baremetal.sh run
+
+This command starts `QEMU` to emulate a system. It uses the `bmfs.img` disk image in `sys`.
+
+
+### Virtual systems
+
+The `bmfs.img` disk image in `sys` can be uploaded to your cloud provider of choice. Otherwise you can create different disk images as follows:
+
+`./baremetal.sh vdi` - Generate VDI disk image for VirtualBox
+`./baremetal.sh vmdk` - Generate VMDK disk image for VMware
+`./baremetal.sh vpc` - Generate VPC disk image for HyperV
+
+
+### Physical systems
+
+
+#### BIOS (legacy systems)
+
+`dd` the `bmfs.img` file from `sys` to a drive.
+
+
+#### UEFI (modern systems)
+
+Copy `BOOTX64.EFI` from `sys` to you boot medium EFI system partition under `/EFI/BOOT/`.
 
 
 // EOF
