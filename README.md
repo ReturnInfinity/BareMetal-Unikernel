@@ -66,7 +66,9 @@ This command starts `QEMU` to emulate a system. It uses the `bmfs.img` disk imag
 The `bmfs.img` disk image in `sys` can be uploaded to your cloud provider of choice. Otherwise you can create different disk images as follows:
 
 `./baremetal.sh vdi` - Generate VDI disk image for VirtualBox
+
 `./baremetal.sh vmdk` - Generate VMDK disk image for VMware
+
 `./baremetal.sh vpc` - Generate VPC disk image for HyperV
 
 
