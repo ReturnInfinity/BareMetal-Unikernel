@@ -53,7 +53,12 @@ start:
 
 	call [ProgramLocation]		; Execute program
 
+	; Shut down the VM
+	; mov ecx, SHUTDOWN
+	; call [b_system]
+
 	jmp $				; Spin forever as program completed
+
 
 noFS:
 	mov rsi, message_noFS
