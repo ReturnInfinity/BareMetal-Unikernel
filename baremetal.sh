@@ -8,16 +8,16 @@ cmd=( qemu-system-x86_64
 	-machine q35
 
 # CPU (only 1 cpu type should be uncommented)
-	-smp sockets=1,cpus=4
+	-smp sockets=1,cpus=2
 	-cpu Westmere
 #	-cpu Westmere,x2apic,pdpe1gb
 #	-cpu host -enable-kvm
 
 # RAM
-	-m 256 # Value is in Megabytes
+	-m 8 # Value is in Megabytes
 
 # Video
-	-device VGA,edid=on,xres=1024,yres=768
+#	-device VGA,edid=on,xres=1024,yres=768
 
 # Network configuration. Use one controller.
 	-netdev socket,id=testnet1,listen=:1234
@@ -35,9 +35,9 @@ cmd=( qemu-system-x86_64
 # NVMe
 #	-device nvme,serial=12345678,drive=disk0
 # AHCI
-	-device ide-hd,drive=disk0
+#	-device ide-hd,drive=disk0
 # VIRTIO
-#	-device virtio-blk,drive=disk0 #,disable-legacy=on,disable-modern=false
+	-device virtio-blk,drive=disk0 #,disable-legacy=on,disable-modern=false
 # Floppy
 #	-drive format=raw,file="sys/floppy.img",index=0,if=floppy
 
@@ -49,10 +49,11 @@ cmd=( qemu-system-x86_64
 
 # Serial configuration
 # Output serial to file
-	-serial file:"sys/serial.log"
+#	-serial file:"sys/serial.log"
 # Output serial to console
-#	-chardev stdio,id=char0,logfile="sys/serial.log",signal=off
-#	-serial chardev:char0
+	-chardev stdio,id=char0,logfile="sys/serial.log",signal=off
+	-serial chardev:char0
+	-display none
 
 # Debugging
 # Enable monitor mode
@@ -89,7 +90,7 @@ function baremetal_clean {
 }
 
 function baremetal_setup {
-	echo -e "BareMetal OS Setup\n==================="
+	echo -e "BareMetal Unikernel Setup\n========================="
 	baremetal_clean
 
 	mkdir src/api
@@ -116,9 +117,20 @@ function baremetal_setup {
 
 	# Tweak start sector since the unikernel doesn't use a hybrid disk image
 	if [[ "$(uname)" == "Darwin" ]]; then
-    		sed -i '' 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+		sed -i '' 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+		sed -i '' 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios-novideo.asm
 	else
-    		sed -i 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+		sed -i 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios.asm
+		sed -i 's/%define DAP_STARTSECTOR 262160/%define DAP_STARTSECTOR 16/g' src/Pure64/src/boot/bios-novideo.asm
+	fi
+
+	# Tweak BareMetal to use no video
+	if [[ "$(uname)" == "Darwin" ]]; then
+		sed -i '' 's/^BUILDFLAGS=.*/BUILDFLAGS="-dNO_LFB -dNO_VGA -dNO_XHCI -dNO_I8259X -dNO_I8257X -dNO_I8254X -dNO_NVME -dNO_AHCI"/' src/BareMetal/build.sh
+		sed -i '' 's/^KERNELSIZE.*/KERNELSIZE equ 10 * 1024/' src/BareMetal/src/kernel.asm
+	else
+		sed -i 's/^BUILDFLAGS=.*/BUILDFLAGS="-dNO_LFB -dNO_VGA -dNO_XHCI -dNO_I8259X -dNO_I8257X -dNO_I8254X -dNO_NVME -dNO_AHCI"/' src/BareMetal/build.sh
+		sed -i 's/^KERNELSIZE.*/KERNELSIZE equ 10 * 1024/' src/BareMetal/src/kernel.asm
 	fi
 
 	baremetal_build

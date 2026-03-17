@@ -9,6 +9,7 @@
 
 BITS 64
 ORG 0x001E0000
+DEFAULT ABS
 SIZE equ 256			; Pad unikernel init code to this length
 
 %include 'api/libBareMetal.asm'
@@ -28,6 +29,10 @@ start:
 	rep movsq
 
 	call [ProgramLocation]		; Execute program
+
+	; Shut down the system
+	mov ecx, SHUTDOWN
+	call [b_system]
 
 	jmp $				; Spin forever as program completed
 

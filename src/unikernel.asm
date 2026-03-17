@@ -9,6 +9,7 @@
 
 BITS 64
 ORG 0x001E0000
+DEFAULT ABS
 SIZE equ 512			; Pad unikernel init code to this length
 
 %include 'api/libBareMetal.asm'
@@ -53,9 +54,10 @@ start:
 
 	call [ProgramLocation]		; Execute program
 
-	; Shut down the VM
-	; mov ecx, SHUTDOWN
-	; call [b_system]
+shutdown:
+	; Shut down the system
+	mov ecx, SHUTDOWN
+	call [b_system]
 
 	jmp $				; Spin forever as program completed
 
@@ -63,13 +65,12 @@ start:
 noFS:
 	mov rsi, message_noFS
 	call output
-	jmp $
+	jmp shutdown
 
 noFile:
 	mov rsi, message_noFile
 	call output
-	jmp $				; Spin forever as program completed
-
+	jmp shutdown
 
 ; Internal functions
 
