@@ -53,7 +53,7 @@ cmd=( qemu-system-x86_64
 # Output serial to console
 	-chardev stdio,id=char0,logfile="sys/serial.log",signal=off
 	-serial chardev:char0
-	-display none
+#	-display none
 
 # Debugging
 # Enable monitor mode
@@ -175,7 +175,7 @@ function build_dir {
 function baremetal_build {
 	baremetal_src_check
 	echo -n "Assembling source code... "
-	
+
 	cd src
 	nasm unikernel.asm -o ../sys/unikernel.sys -l ../sys/unikernel-debug.txt
 	nasm unikernel-uefi.asm -o ../sys/unikernel-uefi.sys -l ../sys/unikernel-uefi-debug.txt
@@ -190,7 +190,7 @@ function baremetal_build {
 	cd "$OUTPUT_DIR"
 
 	# Inject a program binary into to the kernel (ORG 0x001E0000)
-	cat pure64-bios.sys kernel.sys unikernel.sys > software.sys
+	cat pure64-bios-novideo.sys kernel.sys unikernel.sys > software.sys
 	cat pure64-uefi.sys kernel.sys unikernel-uefi.sys > software-uefi.sys
 
 	# Copy software to BMFS for BIOS loading
@@ -209,22 +209,24 @@ function baremetal_install {
 	cd "$OUTPUT_DIR"
 
 	# Copy first 3 bytes of MBR (jmp and nop)
-	dd if=bios.sys of=bmfs.img bs=1 count=3 conv=notrunc > /dev/null 2>&1
+	dd if=bios-novideo.sys of=bmfs.img bs=1 count=3 conv=notrunc > /dev/null 2>&1
 	# Copy MBR code starting at offset 90
-	dd if=bios.sys of=bmfs.img bs=1 skip=90 seek=90 count=356 conv=notrunc > /dev/null 2>&1
+	dd if=bios-novideo.sys of=bmfs.img bs=1 skip=90 seek=90 count=356 conv=notrunc > /dev/null 2>&1
 	# Copy Bootable flag (in case of no mtools)
-	dd if=bios.sys of=bmfs.img bs=1 skip=510 seek=510 count=2 conv=notrunc > /dev/null 2>&1
+	dd if=bios-novideo.sys of=bmfs.img bs=1 skip=510 seek=510 count=2 conv=notrunc > /dev/null 2>&1
 
 	cd ..
 }
 
 function baremetal_run {
 	baremetal_sys_check
-	echo "Starting QEMU..."
+	echo "=== VM Start ==="
 
-	cmd+=( -name "BareMetal OS" )
+	cmd+=( -name "BareMetal Unikernel" )
 
 	"${cmd[@]}" #execute the cmd string
+
+	echo -e "\n===VM Exit ==="
 }
 
 function baremetal_vdi {

@@ -19,6 +19,10 @@ start:
 	mov al, 0x01			; Code for Clear Screen
 	call output_char
 
+	; Display message
+	mov rsi, message_BareMetal
+	call output
+
 	; Detect file system for BMFS
 	mov rax, 0			; First sector
 	mov rcx, 1			; One 4K sector
@@ -133,6 +137,7 @@ output_char:
 
 ; Strings
 
+message_BareMetal:	db 'BareMetal Unikernel v2026.03.18', 13, 10, '-------------------------------', 13, 10, 13, 10
 message_noFS:		db 'No filesystem detected! Halting.', 0
 message_noFile:		db 'No file detected! Halting.', 0
 
