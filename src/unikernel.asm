@@ -137,7 +137,7 @@ output_char:
 
 ; Strings
 
-message_BareMetal:	db 'BareMetal Unikernel v2026.03.18', 13, 10, '-------------------------------', 13, 10, 13, 10
+message_BareMetal:	db 'BareMetal Unikernel v2026.03.18', 13, 10, '-------------------------------', 13, 10, 13, 10, 0
 message_noFS:		db 'No filesystem detected! Halting.', 0
 message_noFile:		db 'No file detected! Halting.', 0
 
